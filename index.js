@@ -28,7 +28,9 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    const assingmentCollection = client.db("studyMates").collection("assingment");
+    const assingmentCollection = client
+      .db("studyMates")
+      .collection("assingment");
 
     // assingment api here
     app.post("/assingments", async (req, res) => {
@@ -42,12 +44,39 @@ async function run() {
     });
     // get single items
     app.get("/assingments/:id", async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        res.send(await assingmentCollection.findOne(query));
-      });
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      res.send(await assingmentCollection.findOne(query));
+    });
 
+    // update assingment api
+    app.put("/assingments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const assingment = req.body;
+      const updateAssingment = {
+        $set: {
+          title: assingment.title,
+          description: assingment.description,
+          marks: assingment.marks,
+          difficultyLevel: assingment.difficultyLevel,
+          deoDate: assingment.deoDate,
+          assingmentImgURL: assingment.assingmentImgURL,
+        },
+      };
 
+      res.send(
+        await assingmentCollection.updateOne(query, updateAssingment, options)
+      );
+    });
+
+    //   level api
+    app.get("/assingments", async (req, res) => {
+      let query = { difficultyLevel: req.query.difficultyLevel };
+      console.log(query);
+      res.send(await assingmentCollection.find(query).toArray());
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

@@ -34,6 +34,9 @@ async function run() {
     const submitedAssingmentCollection = client
       .db("studyMates")
       .collection("submitedAssingment");
+    const markingCollection = client
+      .db("studyMates")
+      .collection("markingAssingment");
 
     // assingment api here
     app.post("/assingments", async (req, res) => {
@@ -92,6 +95,34 @@ async function run() {
     app.get("/submitedAssingments", async (req, res) => {
       res.send(await submitedAssingmentCollection.find().toArray());
     });
+    // get single items
+    app.get("/submitedAssingments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      res.send(await submitedAssingmentCollection.findOne(query));
+    });
+
+    // update submited asssingment status
+    app.patch("/submitedAssingment/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updated = req.body;
+      console.log(updated);
+      const updateStatus = {
+        $set: {
+          assingmentStatus: updated.assingmentStatus,
+          title: updated.title,
+          ObtainMarks: updated.ObtainMarks,
+          giveFeedback: updated.giveFeedback,
+        },
+      };
+      res.send(await markingCollection.updateOne(query, updateStatus));
+    });
+
+    // get all service data
+    app.get("/markingAssingment", async (req, res) => {
+        res.send(await  markingCollection.find().toArray());
+      });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

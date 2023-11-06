@@ -31,6 +31,9 @@ async function run() {
     const assingmentCollection = client
       .db("studyMates")
       .collection("assingment");
+    const submitedAssingmentCollection = client
+      .db("studyMates")
+      .collection("submitedAssingment");
 
     // assingment api here
     app.post("/assingments", async (req, res) => {
@@ -65,7 +68,6 @@ async function run() {
           assingmentImgURL: assingment.assingmentImgURL,
         },
       };
-
       res.send(
         await assingmentCollection.updateOne(query, updateAssingment, options)
       );
@@ -76,6 +78,19 @@ async function run() {
       let query = { difficultyLevel: req.query.difficultyLevel };
       console.log(query);
       res.send(await assingmentCollection.find(query).toArray());
+    });
+
+    //   here is a submited assingment api
+    app.post("/submitedAssingments", async (req, res) => {
+      const submitedAssingments = req.body;
+      res.send(
+        await submitedAssingmentCollection.insertOne(submitedAssingments)
+      );
+    });
+
+    // get all submited assingment data
+    app.get("/submitedAssingments", async (req, res) => {
+      res.send(await submitedAssingmentCollection.find().toArray());
     });
 
     // Send a ping to confirm a successful connection

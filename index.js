@@ -8,7 +8,12 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -34,6 +39,23 @@ async function run() {
     const submitedAssingmentCollection = client
       .db("studyMates")
       .collection("submitedAssingment");
+
+    // jwt api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log("token for ai user: ", user);
+      const token = jwt.sign(user, process.env.SECRET_TOKEN, {
+        expiresIn: "1h",
+      });
+      console.log(token);
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+        })
+        .send({ success: true });
+    });
 
     // assingment api here
     app.post("/assingments", async (req, res) => {

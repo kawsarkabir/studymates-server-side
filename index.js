@@ -34,9 +34,6 @@ async function run() {
     const submitedAssingmentCollection = client
       .db("studyMates")
       .collection("submitedAssingment");
-    const markingCollection = client
-      .db("studyMates")
-      .collection("markingAssingment");
 
     // assingment api here
     app.post("/assingments", async (req, res) => {
@@ -105,6 +102,7 @@ async function run() {
     // update submited asssingment status
     app.patch("/submitedAssingment/:id", async (req, res) => {
       const id = req.params.id;
+      console.log(id);
       const query = { _id: new ObjectId(id) };
       const updated = req.body;
       console.log(updated);
@@ -116,13 +114,15 @@ async function run() {
           giveFeedback: updated.giveFeedback,
         },
       };
-      res.send(await markingCollection.updateOne(query, updateStatus));
+      res.send(
+        await submitedAssingmentCollection.updateOne(query, updateStatus)
+      );
     });
 
     // get all service data
     app.get("/markingAssingment", async (req, res) => {
-        res.send(await  markingCollection.find().toArray());
-      });
+      res.send(await markingCollection.find().toArray());
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

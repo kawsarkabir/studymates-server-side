@@ -73,6 +73,14 @@ async function run() {
       );
     });
 
+    // assingment delete
+    app.delete("/assingments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      res.send(await assingmentCollection.deleteOne(query));
+    });
     //   level api
     app.get("/assingments", async (req, res) => {
       let query = { difficultyLevel: req.query.difficultyLevel };
@@ -100,11 +108,11 @@ async function run() {
     });
 
     app.get("/submitedAssingment/complete", async (req, res) => {
-      const query = { assingmentStatus: 'complete' };
+      const query = { assingmentStatus: "complete" };
       res.send(await submitedAssingmentCollection.find(query).toArray());
     });
     app.get("/submitedAssingment/pending", async (req, res) => {
-      const query = { assingmentStatus: 'pending' };
+      const query = { assingmentStatus: "pending" };
       res.send(await submitedAssingmentCollection.find(query).toArray());
     });
 
@@ -127,7 +135,6 @@ async function run() {
         await submitedAssingmentCollection.updateOne(query, updateStatus)
       );
     });
- 
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

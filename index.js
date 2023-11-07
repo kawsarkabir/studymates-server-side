@@ -99,6 +99,15 @@ async function run() {
       res.send(await submitedAssingmentCollection.findOne(query));
     });
 
+    app.get("/submitedAssingment/complete", async (req, res) => {
+      const query = { assingmentStatus: 'complete' };
+      res.send(await submitedAssingmentCollection.find(query).toArray());
+    });
+    app.get("/submitedAssingment/pending", async (req, res) => {
+      const query = { assingmentStatus: 'pending' };
+      res.send(await submitedAssingmentCollection.find(query).toArray());
+    });
+
     // update submited asssingment status
     app.patch("/submitedAssingment/:id", async (req, res) => {
       const id = req.params.id;
@@ -118,11 +127,7 @@ async function run() {
         await submitedAssingmentCollection.updateOne(query, updateStatus)
       );
     });
-
-    // get all service data
-    app.get("/markingAssingment", async (req, res) => {
-      res.send(await markingCollection.find().toArray());
-    });
+ 
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

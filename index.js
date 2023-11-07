@@ -8,6 +8,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
+app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173"],
@@ -15,7 +16,6 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(cookieParser());
 
 // mongoDB connenct here
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.hvlfmu8.mongodb.net/?retryWrites=true&w=majority`;
@@ -28,6 +28,30 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+// own midleware
+const varifyToken = async (req, res, next) => {
+  const token = req?.cookies?.token;
+  console.log("token in the midleware", token);
+
+  console.log(req.cookies);
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
+
+// logger
+const logger = (req, res, next) => {
+  console.log("logInfo:", req.method, req.url);
+  next();
+};
 
 async function run() {
   try {
@@ -43,16 +67,26 @@ async function run() {
     // jwt api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      console.log("token for ai user: ", user);
       const token = jwt.sign(user, process.env.SECRET_TOKEN, {
         expiresIn: "1h",
       });
-      console.log(token);
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: true,
-          sameSite: "none",
+          secure: process.env.NODE_ENV === "production" ? true : false,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
+
+    // user logout then clear the token
+    app.post("/logOutWithclearCookie", async (req, res) => {
+      const user = req.body;
+      res
+        .clearCookie("token", {
+          maxAge: 0,
+          secure: process.env.NODE_ENV === "production" ? true : false,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
     });
@@ -120,6 +154,12 @@ async function run() {
 
     // get all submited assingment data
     app.get("/submitedAssingments", async (req, res) => {
+      console.log("token for user", req.query?.email);
+      console.log("owner info ", req.user);
+      // if (req.user?.email !== req.query?.email) {
+      //   return res.status(403).send({ message: "forbidden" });
+      // }
+      console.log("cokies paisi", req.cookies.token);
       res.send(await submitedAssingmentCollection.find().toArray());
     });
     // get single items
@@ -129,12 +169,22 @@ async function run() {
       res.send(await submitedAssingmentCollection.findOne(query));
     });
 
-    app.get("/submitedAssingment/complete", async (req, res) => {
-      const query = { assingmentStatus: "complete" };
+    app.get("/submitedAssingment/complete", varifyToken, async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = {
+          assingmentStatus: "complete",
+          submitedUserEmail: req.query?.email,
+        };
+      }
+
+      console.log(query);
       res.send(await submitedAssingmentCollection.find(query).toArray());
     });
-    app.get("/submitedAssingment/pending", async (req, res) => {
-      const query = { assingmentStatus: "pending" };
+    app.get("/pending/pending", async (req, res) => {
+      const query = {
+        assingmentStatus: "pending",
+      };
       res.send(await submitedAssingmentCollection.find(query).toArray());
     });
 

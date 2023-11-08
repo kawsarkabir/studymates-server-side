@@ -60,6 +60,7 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
+
     const assingmentCollection = client
       .db("studyMates")
       .collection("assingment");
@@ -75,8 +76,11 @@ async function run() {
       });
       res
         .cookie("token", token, {
+          // h/* ttpOnly: true,
+          // secure: process.env.NODE_ENV === "production" ? true : false,
+          // sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", */
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production" ? true : false,
+          secure: process.env.NODE_ENV === "production",
           sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
@@ -157,12 +161,6 @@ async function run() {
 
     // get all submited assingment data
     app.get("/submitedAssingments", async (req, res) => {
-      console.log("token for user", req.query?.email);
-      console.log("owner info ", req.user);
-      // if (req.user?.email !== req.query?.email) {
-      //   return res.status(403).send({ message: "forbidden" });
-      // }
-      console.log("cokies paisi", req.cookies.token);
       res.send(await submitedAssingmentCollection.find().toArray());
     });
     // get single items
@@ -180,8 +178,6 @@ async function run() {
           submitedUserEmail: req.query?.email,
         };
       }
-
-      console.log(query);
       res.send(await submitedAssingmentCollection.find(query).toArray());
     });
     app.get("/pending/pending", async (req, res) => {
@@ -194,10 +190,8 @@ async function run() {
     // update submited asssingment status
     app.patch("/submitedAssingment/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const query = { _id: new ObjectId(id) };
       const updated = req.body;
-      console.log(updated);
       const updateStatus = {
         $set: {
           assingmentStatus: updated.assingmentStatus,

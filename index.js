@@ -11,7 +11,10 @@ const port = process.env.PORT || 5000;
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "https://studymates-69d81.web.app",
+      "https://studymates-69d81.firebaseapp.com",
+    ],
     credentials: true,
   })
 );

@@ -134,8 +134,8 @@ async function run() {
           description: assingment.description,
           marks: assingment.marks,
           difficultyLevel: assingment.difficultyLevel,
-          deoDate: assingment.deoDate,
-          assingmentImgURL: assingment.assingmentImgURL,
+          deoDate: assingment.dueDate,
+          assingmentImgURL: assingment.assignmentImgURL,
         },
       };
       res.send(

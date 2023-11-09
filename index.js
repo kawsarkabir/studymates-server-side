@@ -14,7 +14,7 @@ app.use(
     origin: [
       "https://studymates-69d81.web.app",
       "https://studymates-69d81.firebaseapp.com",
-      "http://localhost:5173"
+      "http://localhost:5173",
     ],
     credentials: true,
   })
@@ -51,7 +51,6 @@ const varifyToken = async (req, res, next) => {
   });
 };
 
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -63,6 +62,7 @@ async function run() {
     const submitedAssingmentCollection = client
       .db("studyMates")
       .collection("submitedAssingment");
+    const featureCollection = client.db("studyMates").collection("features");
 
     // jwt api
     app.post("/jwt", async (req, res) => {
@@ -72,9 +72,6 @@ async function run() {
       });
       res
         .cookie("token", token, {
-          // h/* ttpOnly: true,
-          // secure: process.env.NODE_ENV === "production" ? true : false,
-          // sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", */
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
@@ -94,6 +91,14 @@ async function run() {
         .send({ success: true });
     });
 
+    // features api 
+     // count all assingment data
+     app.get("/features", async (req, res) => {
+       res.send(await featureCollection.find().toArray())
+    });
+
+
+
     // assingment api here
     app.post("/assingments", async (req, res) => {
       const assingment = req.body;
@@ -102,18 +107,21 @@ async function run() {
 
     // get all service data
     app.get("/assingments", async (req, res) => {
-      console.log('paginaaton query', req.query);
-      const page = parseInt(req.query.page)
-      const size = parseInt(req.query.size)
-      res.send(await assingmentCollection.find()
-      .skip(page * size)
-      .limit(size)
-      .toArray());
+      console.log("paginaaton query", req.query);
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      res.send(
+        await assingmentCollection
+          .find()
+          .skip(page * size)
+          .limit(size)
+          .toArray()
+      );
     });
     // count all assingment data
     app.get("/assingmentsCount", async (req, res) => {
-      const count = await  assingmentCollection.estimatedDocumentCount();
-      res.send({count});
+      const count = await assingmentCollection.estimatedDocumentCount();
+      res.send({ count });
     });
     // get single items
     app.get("/assingments/:id", async (req, res) => {

@@ -14,7 +14,6 @@ app.use(
     origin: [
       "https://studymates-69d81.web.app",
       "https://studymates-69d81.firebaseapp.com",
-      "http://localhost:5173",
     ],
     credentials: true,
   })

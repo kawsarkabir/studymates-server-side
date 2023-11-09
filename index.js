@@ -14,6 +14,7 @@ app.use(
     origin: [
       "https://studymates-69d81.web.app",
       "https://studymates-69d81.firebaseapp.com",
+      "http://localhost:5173"
     ],
     credentials: true,
   })
@@ -50,11 +51,6 @@ const varifyToken = async (req, res, next) => {
   });
 };
 
-// logger
-const logger = (req, res, next) => {
-  console.log("logInfo:", req.method, req.url);
-  next();
-};
 
 async function run() {
   try {
@@ -106,7 +102,18 @@ async function run() {
 
     // get all service data
     app.get("/assingments", async (req, res) => {
-      res.send(await assingmentCollection.find().toArray());
+      console.log('paginaaton query', req.query);
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
+      res.send(await assingmentCollection.find()
+      .skip(page * size)
+      .limit(size)
+      .toArray());
+    });
+    // count all assingment data
+    app.get("/assingmentsCount", async (req, res) => {
+      const count = await  assingmentCollection.estimatedDocumentCount();
+      res.send({count});
     });
     // get single items
     app.get("/assingments/:id", async (req, res) => {
